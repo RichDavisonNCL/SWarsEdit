@@ -136,12 +136,12 @@ namespace SWars
     public struct SubBlockB
     {
         public ushort unknown1;
-        public ushort unknown2;
+        public ushort unknown2; //All 0, except 8 32k and 4 65k 
     }
     [System.Serializable]
     public struct EntitySubBlock
     {
-        public ushort increment1;  //increments from 65251
+        public short nextEntityID;  //Negative
         public ushort unknown2;    //usually 1280, twice 6144(could that be the 'smoke' tag?) setting everything to 6144 crashes:}
         public ushort zero1;   //always 0
         public ushort four1;   //always 4
@@ -149,7 +149,7 @@ namespace SWars
         public ushort zero3;   //always 0
         public ushort zero4;   //always 0
         public ushort always64;    //always 64
-        public ushort increment2;  //increments from 65250
+        public short prevEntityID;  //Negative
 
         public byte x0;
         public byte x1;
@@ -176,9 +176,9 @@ namespace SWars
         public ushort emitterFrequency;    //0 except for emitters lower = faster
         public ushort zero7;   //always 0
         public ushort zero8;   //always 0
-        public ushort unknown28;   //either 0 or unique value
-        public ushort unknown29;   //either 0 or unique value
-        public ushort increment3;  //incrementing value, 0 for last sprite
+        public short unknown28;   //either 0 or unique value
+        public short unknown29;   //either 0 or unique value
+        public short entityID;  //Entity ID. Is negative, 0 indicates this is the last entity
     };
 
     /*
@@ -377,14 +377,14 @@ namespace SWars
     //set all these to 0, didnt seem to make any difference?
     public struct DataBlockI
     {
-        public ushort unknown1;
-        public ushort unknown2;
-        public ushort unknown3;
-        public ushort unknown4;
-        public ushort unknown5;
-        public ushort unknown6;
-        public ushort unknown7;
-        public ushort unknown8;
+        public short unknown1;
+        public short unknown2;
+        public short unknown3;
+        public short unknown4;
+        public short unknown5;
+        public short unknown6;
+        public short unknown7;
+        public short unknown8;
     };
     [System.Serializable]
     /*
@@ -482,23 +482,23 @@ namespace SWars
     [System.Serializable]
     public enum VehicleNavPointType : ushort
     {
-        Normal = 0,
-        Unknown1 = 1,
-        Barrier1 = 1 << 1,
-        Barrier2 = 1 << 2,
-        Crossing = 1 << 3,
-        Junction1 = 1 << 4,
-        Junction2 = 1 << 5,
-        Unknown2 = 1 << 6,
-        Exit = 1 << 7,
-        Entrance = 1 << 8,
-        Water1 = 1 << 9,
-        Water2 = 1 << 10,
-        Parking = 1 << 11,
-        EntryDest = 1 << 12,
-        Unknown3 = 1 << 13,
-        Unknown4 = 1 << 14,
-        Barrier3 = 1 << 15//,
+        Normal      = 0,
+        Unknown1    = 1,
+        Barrier1    = 1 << 1,
+        Barrier2    = 1 << 2,
+        Crossing    = 1 << 3,
+        Junction1   = 1 << 4,
+        Junction2   = 1 << 5,
+        Unknown2    = 1 << 6,
+        Exit        = 1 << 7,
+        Entrance    = 1 << 8,
+        Water1      = 1 << 9,
+        Water2      = 1 << 10,
+        Parking     = 1 << 11,
+        EntryDest   = 1 << 12,
+        Unknown3    = 1 << 13,
+        Unknown4    = 1 << 14,
+        Barrier3    = 1 << 15//,
     }
     [System.Serializable]
     public struct VehicleNavPoint
@@ -538,7 +538,7 @@ namespace SWars
         public short xEnd;
         public short yEnd;
         public short zEnd;
-        public short unknown1;
+        public short primIndex; //Quad index if negative?
     };
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]

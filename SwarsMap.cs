@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using SWars;
 using static SWars.Functions;
-using static SWarsVerify;
 
 namespace SWars
 {
@@ -73,6 +74,8 @@ namespace SWars
         string file = null;
 
         public float[,] vHeights;
+
+
 
         public bool LoadMap(string filename)
         {
@@ -216,14 +219,20 @@ namespace SWars
             SubBlockB blockB;
             int finalCount = 0;
 
-            List<int> blockEnds = new List<int>();
+            List<int> blockEnds32k = new List<int>();
+            List<int> blockEnds65k = new List<int>();
             while (!done)//This can't be the 'proper' way to be doing this bit...
             {
                 blockB = ByteToType<SubBlockB>(reader);
 
+                if(blockB.unknown2 == 65535)
+                {
+                    blockEnds65k.Add(subBlockBData.Count);
+                }
+
                 if (IsFinalEntry(blockB))
                 {
-                    blockEnds.Add(subBlockBData.Count);
+                    blockEnds32k.Add(subBlockBData.Count);
                     finalCount++;
                 }
                 subBlockBData.Add(blockB);
@@ -352,6 +361,206 @@ namespace SWars
 
                 WriteData<DataBlockD>(writer, ref dataBlockD);
             }
+        }
+
+
+        public int GetMeshForTri(int triIndex)
+        {
+            if(triIndex < 0)
+            {
+                return -1;
+            }
+            for(int i = 0; i < meshes.Count; ++i)
+            {
+                MeshDetails m = meshes[i];
+                if(triIndex >= m.triIndexBegin && triIndex < (m.triIndexBegin + m.triIndexNum)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+        
+        public int GetMeshForQuad(int quadIndex)
+        {
+            if (quadIndex < 0)
+            {
+                return -1;
+            }
+            for (int i = 0; i < meshes.Count; ++i)
+            {
+                MeshDetails m = meshes[i];
+                if (quadIndex >= m.quadIndexBegin && quadIndex < (m.quadIndexBegin + m.quadIndexNum)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+        public bool VerifyMap()
+        {
+            return true;
+        }
+        class VariableStat
+        {
+            public int minVal;
+            public int maxVal;
+        };
+
+        public void Serialise<T>(TextWriter writer, T data)
+        {
+            foreach (var prop in data.GetType().GetFields())
+            {
+                writer.WriteLine(prop.Name + ": " + prop.GetValue(data));
+            }
+        }
+
+        public bool BuildMapStats(TextWriter writer, List<short> dataSource, string strutName)
+        {
+            if (dataSource.Count == 0)
+            {
+                return false;
+            }
+            short test = dataSource[0];
+
+            short minValue = test;
+            short maxValue = test;
+            for (int i = 0; i < dataSource.Count; ++i)
+            {
+                minValue = Math.Min(minValue, dataSource[i]);
+                maxValue = Math.Max(maxValue, dataSource[i]);
+            }
+
+            Dictionary<short, int> distribution = new Dictionary<short, int>();
+            for (int i = 0; i < dataSource.Count; ++i)
+            {
+                int currentCount = 0;
+                distribution.TryGetValue(dataSource[i], out currentCount);
+                distribution[dataSource[i]] = currentCount + 1;
+            }
+
+            writer.Write("\n");
+            writer.Write("Stats for struct " + strutName + "\n");
+            writer.Write("Source array count: " + dataSource.Count + "\n\n");
+            writer.Write("Range information\n\n");
+
+            writer.Write("Min: " + minValue + "\n");
+            writer.Write("Max: " + maxValue + "\n");
+
+            writer.Write("\n");
+            writer.Write("Distribution information\n");
+            writer.Write("\n");
+
+            var sortedDict = from entry in distribution orderby entry.Key ascending select entry;
+
+            writer.Write("(Value , Count)\n");
+
+            foreach (KeyValuePair<short, int> entry in sortedDict)
+            {
+                writer.Write(entry.Key + " , " + entry.Value + "\n");
+            }
+
+            return true;
+        }
+
+        public bool BuildMapStats<T>(TextWriter writer, List<T> dataSource)
+        {
+            if(dataSource.Count == 0)
+            {
+                return false;
+            }
+            T test = dataSource[0];
+
+            Dictionary<string, VariableStat> keyValuePairs = new Dictionary<string, VariableStat>();
+
+            Dictionary<string,Dictionary<int, int>> distribution = new Dictionary<string, Dictionary<int, int>>();
+
+            foreach (var prop in test.GetType().GetFields())
+            {
+                VariableStat stat = new VariableStat();
+                stat.minVal = Convert.ToInt32(prop.GetValue(test));
+                stat.maxVal = Convert.ToInt32(prop.GetValue(test));
+                keyValuePairs.Add(prop.Name, stat);
+
+                distribution.Add(prop.Name, new Dictionary<int, int>());
+            }
+
+            for (int i = 0; i < dataSource.Count; ++i)
+            {
+                foreach (var prop in test.GetType().GetFields())
+                {
+                    Dictionary<int, int> dict = null;
+                    distribution.TryGetValue(prop.Name, out dict);
+                    int val = Convert.ToInt32(prop.GetValue(dataSource[i]));
+
+                    int currentCount = 0;
+                    dict.TryGetValue(val, out currentCount);
+                    dict[val] = currentCount + 1;
+
+                    VariableStat stat;
+
+                    keyValuePairs.TryGetValue(prop.Name, out stat);
+                    stat.minVal = Math.Min(stat.minVal, val);
+                    stat.maxVal = Math.Max(stat.maxVal, val);
+                }
+            }
+            writer.Write("\n");
+            writer.Write("Stats for struct " + test.GetType().Name + "\n");
+            writer.Write("Source array count: " + dataSource.Count + "\n\n");
+
+            writer.Write("Range information\n\n");
+
+            foreach (var prop in test.GetType().GetFields())
+            {
+                VariableStat stat;
+                keyValuePairs.TryGetValue(prop.Name, out stat);
+
+                writer.Write(prop.Name + " min: " + stat.minVal + "\n");
+                writer.Write(prop.Name + " max: " + stat.maxVal + "\n");
+            }
+            writer.Write("\n");
+            writer.Write("Distribution information\n");
+            writer.Write("\n");
+            foreach (var prop in test.GetType().GetFields())
+            {
+                Dictionary<int, int> dict = null;
+                distribution.TryGetValue(prop.Name, out dict);
+
+                var sortedDict = from entry in dict orderby entry.Key ascending select entry;
+
+                writer.Write("Field: " + prop.Name + " (Value , Count)\n");
+
+                foreach (KeyValuePair<int, int> entry in sortedDict)
+                { 
+                    writer.Write(entry.Key + " , " + entry.Value + "\n");
+                }
+                writer.Write("\n");
+            }
+
+            return true;
+        }
+
+        //There's ALWAYS exactly 8 of these in the data block...
+        public bool IsFinalEntry(SWars.SubBlockB block)
+        {
+            if (block.unknown1 == 0 && block.unknown2 == 32768)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool IsFinalEntry(SWars.SubBlockA block)
+        {
+            if (block.unknown12 == 0 &&
+                block.unknown14 == 0 &&
+                block.unknown18 == 0 &&
+                block.unknown20 == 0 &&
+                block.unknown22 == 0 &&
+                block.unknown24 == 0
+                )
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

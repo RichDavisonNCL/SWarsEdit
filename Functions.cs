@@ -150,6 +150,34 @@ namespace SWars
             z = (ushort)(o.z1 + (o.z2 << 8));
         }
 
+        public static bool BlockLineIsQuad(SWars.NPCBlockLine b)
+        {
+            return (b.primIndex) < 0;
+        }
+
+        public static bool BlockLineIsTri(SWars.NPCBlockLine b)
+        {
+            return (b.primIndex) >= 0;
+        }
+
+        public static int BlockLineTriIndex(SWars.NPCBlockLine b)
+        {
+            if (!BlockLineIsTri(b))
+            {
+                return -1;
+            }
+            return b.primIndex;
+        }
+
+        public static int BlockLineQuadIndex(SWars.NPCBlockLine b)
+        {
+            if (!BlockLineIsQuad(b))
+            {
+                return -1;
+            }
+            return -b.primIndex;
+        }
+
         public static string SpriteNumToName(int nameID)
         {
             switch (nameID)

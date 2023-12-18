@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace SWars
 {
-    public class Textures
+    public class SWarsTextures
     {
         public static void ReadPaletteFile(string filename, ColourFunc cFunc)
         {
@@ -16,9 +18,10 @@ namespace SWars
 
             for (int i = 0; i < 256; ++i)
             {
-                float r = palette[(i * 3) + 0] / 255.0f;
-                float g = palette[(i * 3) + 1] / 255.0f;
-                float b = palette[(i * 3) + 2] / 255.0f;
+                float r = palette[(i * 3) + 0] / 63.0f;
+                float g = palette[(i * 3) + 1] / 63.0f;
+                float b = palette[(i * 3) + 2] / 63.0f;
+
                 float a = i == 0 ? 0.0f : 1.0f;
                 cFunc(r, g, b, a);
             }
