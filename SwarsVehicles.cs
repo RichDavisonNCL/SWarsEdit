@@ -6,7 +6,7 @@ namespace SWars
 {
     public class Vehicles
     {
-        public static void LoadMeshes(string filename, ref VehicleMeshFile vehicleData)
+        public static void LoadVehicleFile(string filename, ref VehicleMeshFile vehicleData)
         {
             using (BinaryReader reader = new BinaryReader(File.Open(filename, FileMode.Open)))
             {
@@ -50,7 +50,7 @@ namespace SWars
             }
         }
 
-        public static void SaveMeshes(string filename, VehicleMeshFile vData)
+        public static void SaveVehicleFile(string filename, VehicleMeshFile vData)
         {
             using (BinaryWriter writer = new BinaryWriter(File.Open(filename, FileMode.OpenOrCreate)))
             {

@@ -6,7 +6,7 @@ namespace SWars
 {
     public static class FilePath
     {
-        static private string FILE_ROOT = "";
+        static private string FILE_ROOT = "Assets/";
     
         static public string Get()
         {
