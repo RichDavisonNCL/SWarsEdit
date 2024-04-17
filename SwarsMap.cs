@@ -373,7 +373,7 @@ namespace SWars
             for(int i = 0; i < meshes.Count; ++i)
             {
                 MeshDetails m = meshes[i];
-                if(triIndex >= m.triIndexBegin && triIndex < (m.triIndexBegin + m.triIndexNum)) {
+                if(triIndex >= m.triIndexBegin && triIndex < (m.triIndexBegin + m.triIndexCount)) {
                     return i;
                 }
             }
@@ -389,7 +389,7 @@ namespace SWars
             for (int i = 0; i < meshes.Count; ++i)
             {
                 MeshDetails m = meshes[i];
-                if (quadIndex >= m.quadIndexBegin && quadIndex < (m.quadIndexBegin + m.quadIndexNum)) {
+                if (quadIndex >= m.quadIndexBegin && quadIndex < (m.quadIndexBegin + m.quadIndexCount)) {
                     return i;
                 }
             }

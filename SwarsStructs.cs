@@ -278,6 +278,16 @@ namespace SWars
         public short z;
         public ushort unknown2;
     };
+    //Flags field
+    //4096 and 2048 are always paired on the vehicles, only on V20 and V25
+    //Which are both rockets, and the relevent faces are the flame trail
+
+    //4096
+    //2048
+    //1024: Effected by lighting?
+    //512: Fullbrite?
+    //256:  This is textured, ignore palette
+
     [System.Serializable]
     public struct Tri
     {
@@ -285,8 +295,8 @@ namespace SWars
         public ushort vert1Index;
         public ushort vert2Index;
         public ushort faceIndex;
-        public ushort unknown1; //Usually 1280
-        public ushort unknown2;
+        public ushort flags; //Usually 1280
+        public ushort paletteIndex;
         public ushort unknown3;
         public ushort unknown4;
         public ushort unknown5;
@@ -306,8 +316,8 @@ namespace SWars
         public ushort vert2Index;
         public ushort vert3Index;
         public ushort faceIndex;
-        public ushort unknown1;
-        public ushort unknown2;
+        public ushort flags;
+        public ushort paletteIndex;
         public ushort buildingIndex;
         public ushort unknown4;
         public ushort unknown5;
@@ -326,10 +336,10 @@ namespace SWars
     public struct MeshDetails
     {
         public ushort triIndexBegin;
-        public ushort triIndexNum;
+        public ushort triIndexCount;
         public ushort unknown1;
         public ushort quadIndexBegin;
-        public ushort quadIndexNum;
+        public ushort quadIndexCount;
         public ushort buildingIndex;
         public ushort unknown3;
         public ushort yPosition;
